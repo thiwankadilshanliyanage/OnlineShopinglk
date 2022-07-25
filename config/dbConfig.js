@@ -1,26 +1,18 @@
-// import pakages
-const express = require('express')
-const cors = require('cors')
-const app = express()
+// DB configure
 
-// Port adding
-var coreOption = {
-    origin:'https://locallhost:8081'
+const Pool = require("mysql2/typings/mysql/lib/Pool");
+
+module.exports = {
+    Host:'localhost',
+    USER:'root',
+    PASSWORD:'thiwanka123',
+    DB:'OnlineShoppinglk',
+    dialect:'mysql',
+
+    pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+    }
 }
-
-//palges using
-app.use(cors(coreOption))
-app.use(express.json())
-app.use(express.urlencoded({extended:true}))
-
-//testing
-app.get('/',(req,res)=>{
-    res.json({messag: 'hello from api'})
-})
-
-//port
-const PORT = process.env.PORT || 8080;
-//server
-app.listen(PORT,()=>{
-    console.log('server is running on port ${PORT}')
-})
