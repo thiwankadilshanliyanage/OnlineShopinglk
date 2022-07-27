@@ -48,8 +48,50 @@ db.sequelize.sync({force:false})
     console.log("sync-done")
 })
 
-//relationships
+//relationships(foreignkey)
+//Categories has many Items
+db.category.hasMany(db.item,{
+    foreignKey: 'category_id',
+    as: 'item'
+})
 
+db.item.belongsTo(db.category,{
+    foreignKey: 'category_id',
+    as:'category'
+})
+
+//Cities has many Items
+db.city.hasMany(db.item,{
+    foreignKey: 'cities_id',
+    as: 'item'
+})
+
+db.item.belongsTo(db.city,{
+    foreignKey: 'cities_id',
+    as:'city'
+})
+
+//ItemConditions has many Items
+db.condition.hasMany(db.item,{
+    foreignKey: 'condition_id',
+    as: 'item' 
+})
+
+db.item.belongsTo(db.condition,{
+    foreignKey: 'condition_id',
+    as: 'condition'
+})
+
+//Cities has many sellers
+db.city.hasMany(db.seller,{
+    foreignKey: 'cities_id',
+    as: 'seller'
+})
+
+db.seller.belongsTo(db.city,{
+    foreignKey: 'cities_id',
+    as:'city'
+})
 
 //finally export module
 module.exports = db
