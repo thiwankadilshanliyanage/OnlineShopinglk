@@ -4,7 +4,7 @@ const { sequelize, Sequelize } = require('../models')
 
 
 //create main Model
-const City = db.city
+const City = db.cities
 
 
 //main work 

@@ -34,13 +34,13 @@ db.Sequelize = Sequelize
 db.sequelize = sequelize
 
 //assign models to db table
-db.category = require('./categoryModel.js')(sequelize,DataTypes)
-db.city = require('./cityModel.js')(sequelize,DataTypes)
-db.condition = require('./conditionModel.js')(sequelize,DataTypes)
-db.item = require('./itemModel.js')(sequelize,DataTypes)
-db.item_img = require('./item_imgModel.js')(sequelize,DataTypes)
-db.seller = require('./sellerModel.js')(sequelize,DataTypes)
-db.user_img = require('./user_imgModel.js')(sequelize,DataTypes)
+db.categories = require('./categoryModel.js')(sequelize,DataTypes)
+db.cities = require('./cityModel.js')(sequelize,DataTypes)
+db.conditions = require('./conditionModel.js')(sequelize,DataTypes)
+db.items = require('./itemModel.js')(sequelize,DataTypes)
+db.item_imgs = require('./item_imgModel.js')(sequelize,DataTypes)
+db.sellers = require('./sellerModel.js')(sequelize,DataTypes)
+db.user_imgs = require('./user_imgModel.js')(sequelize,DataTypes)
 
 //syncronize db tables
 db.sequelize.sync({force:false})
@@ -50,45 +50,45 @@ db.sequelize.sync({force:false})
 
 //relationships(foreignkey)
 //Categories has many Items
-db.category.hasMany(db.item,{
+db.categories.hasMany(db.items,{
     foreignKey: 'category_id',
     as: 'item'
 })
 
-db.item.belongsTo(db.category,{
+db.items.belongsTo(db.categories,{
     foreignKey: 'category_id',
     as:'category'
 })
 
 //Cities has many Items
-db.city.hasMany(db.item,{
+db.cities.hasMany(db.items,{
     foreignKey: 'cities_id',
     as: 'item'
 })
 
-db.item.belongsTo(db.city,{
+db.items.belongsTo(db.cities,{
     foreignKey: 'cities_id',
     as:'city'
 })
 
 //ItemConditions has many Items
-db.condition.hasMany(db.item,{
+db.conditions.hasMany(db.items,{
     foreignKey: 'condition_id',
     as: 'item' 
 })
 
-db.item.belongsTo(db.condition,{
+db.items.belongsTo(db.conditions,{
     foreignKey: 'condition_id',
     as: 'condition'
 })
 
 //Cities has many sellers
-db.city.hasMany(db.seller,{
+db.cities.hasMany(db.sellers,{
     foreignKey: 'cities_id',
     as: 'seller'
 })
 
-db.seller.belongsTo(db.city,{
+db.sellers.belongsTo(db.cities,{
     foreignKey: 'cities_id',
     as:'city'
 })

@@ -2,7 +2,9 @@ module.exports = (sequelize, DataTypes) =>{
     const Seller = sequelize.define("seller",{
         id: {
             type: DataTypes.INTEGER,
-            primaryKey:true
+            primaryKey:true,
+            
+            
         },
         name: {
             type: DataTypes.STRING,

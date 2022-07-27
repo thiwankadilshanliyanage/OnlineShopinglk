@@ -1,12 +1,8 @@
-// DB configure
-
-const Pool = require("mysql2/typings/mysql/lib/Pool");
-
 module.exports = {
-    Host:'localhost',
+    HOST:'localhost',
     USER:'root',
     PASSWORD:'thiwanka123',
-    DB:'OnlineShoppinglk',
+    DB:'onlineshoppinglk',
     dialect:'mysql',
 
     pool: {
