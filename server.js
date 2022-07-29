@@ -18,9 +18,14 @@ app.use(express.urlencoded({extended:true}))
 app.use(cookieParser())
 
 //routes
+const indexRouter = require('./routes/indexRouter.js')//index router
+const regrouter = require('./routes/registerRouter.js')//register router
 
-const regrouter = require('./routes/registerRouter.js')
-app.use('/register', regrouter)
+
+
+//use routes 
+app.use('/', indexRouter)//main page loading with categories
+app.use('/register', regrouter)//register seller
 
 //server
 app.listen(PORT, () => {
