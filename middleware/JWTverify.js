@@ -36,7 +36,7 @@ const currentUser = (req,res,next) => {
     const token = req.cookies.jwt
 
     if(token){
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decodedToken) => {
+        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
             if(err){
                 console.log(err.message)
                 res.locals.user = null
@@ -45,10 +45,10 @@ const currentUser = (req,res,next) => {
                 console.log(decodedToken)
                 let seller = await Seller.findAll({
                     attributes:{
-                        exclude: 'sellerPassword'
+                        exclude: 'password'
                     },
                     where: {
-                        sellerEmail : decodedToken.email
+                        email : decodedToken.email
                     }
                 })
                 res.locals.user = seller
