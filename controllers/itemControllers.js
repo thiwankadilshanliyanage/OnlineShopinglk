@@ -493,6 +493,107 @@ const getItemInformation = async (req,res) => {
    
 }
 
+//get add item page necessary data
+const getAddItemNecessityInfo = async (req,res) => {
+    const token = req.cookies.jwt
+    let email 
+    
+    if(token){
+        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
+            if(err){
+                return res.status(400).json({ 'message' : 'jwt error occured'})
+            }else{
+                email = decodedToken.email
+            }
+        })
+    }else{
+        res.redirect('/login');
+    }
+
+    if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
+   
+    const foundSeller = await Seller.findOne({
+        where: {
+            email : email
+        }
+    })
+
+    if(!foundSeller) return res.sendStatus(403) //Forbidden
+
+    const foundCity = await City.findOne({
+        where: {
+            cityId: foundSeller.cities_id
+        }
+    })
+
+    const category =  await Category.findAll()
+    const icondition =  await ItemCondition.findAll()
+    const city = await City.findAll()
+    
+    res.status(200).send({
+        categories : category,
+        itemConditions : icondition,
+        cities : city,
+        details : {
+         //   contact: foundSeller.sellerContact,
+            city : foundCity.city
+        }
+        })    
+   
+}
+
+//unpublish item by item id
+const unpublishItembyitemid = async (req,res) => {
+    const itemId = req.query.id
+    
+    const token = req.cookies.jwt
+    let email 
+    
+    if(token){
+        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
+            if(err){
+                return res.status(400).json({ 'message' : 'jwt error occured'})
+            }else{
+                email = decodedToken.email
+            }
+        })
+    }else{
+        res.redirect('/login');
+    }
+
+    if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
+   
+    const foundSeller = await Seller.findOne({
+        where: {
+            email : email
+        }
+    })
+
+    if(!foundSeller) return res.sendStatus(403) //Forbidden
+
+    const item =  await Item.findOne({
+        where: {
+            itemId : itemId,
+            sellerId : foundSeller.seller_id,
+            status : 1
+        }
+    })
+    
+    if(!item) return res.sendStatus(403)
+    
+    const remItem = await Item.update({
+        status :0
+    },{
+        where: {
+            itemId : itemId,
+            sellerId : foundSeller.seller_id
+        }
+    })
+
+    res.redirect('/account')     
+   
+}
+
 //Add items
 
 const addItem = async (req,res) => {
@@ -570,6 +671,143 @@ const addItem = async (req,res) => {
 
 
         res.redirect('/account')
+}
+
+//Edit Item 
+const editItem = async (req,res) => {
+
+    const {name,category_id,condition_id,price,description,cities_id,contact} = req.body
+    
+    const itemImages = req.files
+
+    let itemImgs = []
+
+    if(itemImages){
+        for(var count=0; count<itemImages.length; count++){
+            itemImgs[count] = itemImages[count].path
+        }
+    }    
+
+    if(!name || !category_id || !condition_id || !price || !description || !cities_id || !contact)
+        return res.status(400).json({'message': 'All information are required'})
+
+        const itemId = req.query.id
+        const token = req.cookies.jwt
+        let email 
+        
+        if(token){
+            jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
+                if(err){
+                    return res.status(400).json({ 'message' : 'jwt error'})
+                }else{
+                    email = decodedToken.email
+                }
+            })
+        }else{
+            res.redirect('/login');
+        }
+    
+        if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
+       
+        const foundSeller = await Seller.findOne({
+            where: {
+                email : email
+            }
+        })
+    
+        if(!foundSeller) return res.sendStatus(403) //Forbidden
+
+        const foundItem= await Item.findOne({
+            where: {
+                itemId : itemId,
+                sellerId : foundSeller.seller_id
+            }
+        })
+    
+        if(!foundItem) return res.sendStatus(403) //Forbidden
+
+        const updateItem = await Item.update({
+            category_id: category_id,
+            name: name,
+            condition_id: condition_id,
+            price: price,
+            cities_id: cities_id,
+            contact: contact,
+            description: description,
+            status: 1
+        },{
+            where: {
+                itemId : itemId,
+                sellerId : foundSeller.seller_id
+            }
+        })
+
+        if(itemImages){
+            const currentImgs = await ItemImage.update({
+                status: 0
+            },{
+                where: {
+                    itemId : foundItem.itemId,
+                    status : 1
+                }
+            })
+
+            const newImgs = await ItemImage.create({
+                itemId: foundItem.itemId,
+                imageName: itemImgs.toString(),
+                status: 1
+            })
+        }
+    
+        res.redirect('/account')
+}
+
+//remove item images
+const deleteImgs = async (req,res) => {
+  
+    const itemId = req.query.id
+    const token = req.cookies.jwt
+    let email 
+    
+    if(token){
+        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
+            if(err){
+                return res.status(400).json({ 'message' : 'jwt error'})
+            }else{
+                email = decodedToken.email
+            }
+        })
+    }else{
+        res.redirect('/login');
+    }
+
+    if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
+   
+    const foundItem = await Item.findOne({
+        where: {
+            itemId : itemId,
+            status: 1
+        }
+    })
+
+    if(!foundItem) return res.sendStatus(403) //Forbidden
+
+    const remImg = await ItemImage.update({
+        status : 0
+    },{
+        where:{
+            itemId: foundItem.itemId,
+            status: 1
+        }
+    })
+
+    const updImg = await ItemImage.create({
+                itemId: foundItem.itemId,
+                imageName: '',
+                status: 1
+    })
+   
+    res.redirect('/account/edit?itemId='+foundItem.itemId)
 }
 
 module.exports={
