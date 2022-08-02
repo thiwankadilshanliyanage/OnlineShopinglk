@@ -810,6 +810,49 @@ const deleteImgs = async (req,res) => {
     res.redirect('/account/edit?itemId='+foundItem.itemId)
 }
 
+//Date and Time format
+function padTo2Digits(num) {
+    return num.toString().padStart(2, '0');
+}
+  
+function formatDate(date) {
+    return (
+      [
+        date.getFullYear(),
+        padTo2Digits(date.getMonth() + 1),
+        padTo2Digits(date.getDate()),
+      ].join('-') +
+      ' ' +
+      [
+        padTo2Digits(date.getHours()),
+        padTo2Digits(date.getMinutes()),
+        padTo2Digits(date.getSeconds()),
+      ].join(':')
+    );
+}
+
+const getPagination = (page, size) => {
+    const limit = size ? +size : 10;
+    const offset = page ? page * limit : 0;
+    return { limit, offset };
+  };
+
+  const getPagingData = (data, page, limit) => {
+    const { count: totalItems, rows: items } = data;
+    const currentPage = page ? +page : 0;
+    const totalPages = Math.ceil(totalItems / limit);
+    return { totalItems, items, totalPages, currentPage };
+  };
+
 module.exports={
-    addItem
+    addItem,
+    searchedItems,
+    searchAllItemsBySeller,
+    searchItemDetails,
+    getItemInformation,
+    unpublishItembyitemid,
+    getAddItemNecessityInfo,
+    addItem,
+    editItem,
+    deleteImgs
 }
