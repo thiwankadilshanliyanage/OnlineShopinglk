@@ -26,7 +26,7 @@ const getAllItems = async (req,res) => {
     const cty = await City.findAll()
 
     const { page, size } = req.query;
-    const { limit, offset } = getPagination(page, size);
+    const { limit, offset } = getPagination(page, size);//pagination
 
     if(!category && !name && !city){
         //take All Items
@@ -51,7 +51,7 @@ const getAllItems = async (req,res) => {
             limit, offset
         })
 
-        const pagitem = getPagingData(item, page, limit)
+        const pagitem = getPagingData(item, page, limit)//pagination page data
 
         res.status(200).send({
             categories : cat,
@@ -337,7 +337,7 @@ const searchAllItemsBySeller = async (req,res) => {
         }
     })
 
-    if(!foundSeller) return res.sendStatus(403) //Forbidden
+    if(!foundSeller) return res.sendStatus(403) //restric
 
     const item =  await Item.findAll({
         include:[{
@@ -409,7 +409,7 @@ const searchItemDetails = async (req,res) => {
         }
     })
 
-    if(!foundSeller) return res.sendStatus(403) //Forbidden
+    if(!foundSeller) return res.sendStatus(403) //restric
 
     const item =  await Item.findOne({
         include:[
@@ -518,7 +518,7 @@ const getAddItemNecessityInfo = async (req,res) => {
         }
     })
 
-    if(!foundSeller) return res.sendStatus(403) //Forbidden
+    if(!foundSeller) return res.sendStatus(403) //restric
 
     const foundCity = await City.findOne({
         where: {
@@ -569,7 +569,7 @@ const unpublishItembyitemid = async (req,res) => {
         }
     })
 
-    if(!foundSeller) return res.sendStatus(403) //Forbidden
+    if(!foundSeller) return res.sendStatus(403) //restric
 
     const item =  await Item.findOne({
         where: {
@@ -635,7 +635,7 @@ const addItem = async (req,res) => {
             }
         })
     
-        if(!foundSeller) return res.sendStatus(403) //Forbidden
+        if(!foundSeller) return res.sendStatus(403) //restric
 
         const dt = formatDate(new Date()).toString()// date
         
@@ -715,7 +715,7 @@ const editItem = async (req,res) => {
             }
         })
     
-        if(!foundSeller) return res.sendStatus(403) //Forbidden
+        if(!foundSeller) return res.sendStatus(403) //restric
 
         const foundItem= await Item.findOne({
             where: {
@@ -724,7 +724,7 @@ const editItem = async (req,res) => {
             }
         })
     
-        if(!foundItem) return res.sendStatus(403) //Forbidden
+        if(!foundItem) return res.sendStatus(403) //restric
 
         const updateItem = await Item.update({
             category_id: category_id,
@@ -790,7 +790,7 @@ const deleteImgs = async (req,res) => {
         }
     })
 
-    if(!foundItem) return res.sendStatus(403) //Forbidden
+    if(!foundItem) return res.sendStatus(403) //restric
 
     const remImg = await ItemImage.update({
         status : 0

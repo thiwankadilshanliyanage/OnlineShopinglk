@@ -7,33 +7,24 @@ const router = require('express').Router()
 
 
 router.route('/')
-    //get all Listings by the seller
-    .get(itemController.searchAllItemsBySeller)
-
+    .get(itemController.searchAllItemsBySeller)    //get all Listings by the seller
 router.route('/add')
-    //add listing -- get categories, itemconditions, cities ,sellerContact, sellerCity
-    .get(itemController.getAddItemNecessityInfo)
-    //save listing
-    .post(itemImageMiddleware.upload,itemController.addItem)
+    .get(itemController.getAddItemNecessityInfo) //add listing -- get categories, itemconditions, cities ,sellerContact, sellerCity
+    .post(itemImageMiddleware.upload,itemController.addItem) //save listing
 
 router.route('/edit')
-    //edit listing --  get categories, itemconditions, cities ,itemContact, itemCity
-    .get(itemController.searchItemDetails)
-    //save edit listing
-    .post(itemImageMiddleware.upload,itemController.editItem)
+    .get(itemController.searchItemDetails) //edit listing --  get categories, itemconditions, cities ,itemContact, itemCity   
+    .post(itemImageMiddleware.upload,itemController.editItem)//save edit listing
 
 router.route('/edit/delimgs')
-    .get(itemController.delImgs)
+    .get(itemController.deleteImgs)//delet img
 
 router.route('/delete')
-    //delete or unpublish listing
-    .get(itemController.unpublishItembyitemid)   
+    .get(itemController.unpublishItembyitemid) //delete or unpublish listing  
 
 router.route('/settings')
-    //get seller details
-    .get(sellerController.getSellerDetailsFromSellerEmail)
-    //update change settings
-    .post(sellerImageMiddleware.upload,sellerController.updateSellerDetails)
+    .get(sellerController.getSellerDetailsFromSellerEmail)//get seller details
+    .post(sellerImageMiddleware.upload,sellerController.updateSellerDetails)//update change settings
 
 router.route('/settings/imgdel')
     .get(sellerController.removeSellerImage)
