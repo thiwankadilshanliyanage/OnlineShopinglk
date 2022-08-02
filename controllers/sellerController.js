@@ -6,9 +6,13 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
 
-//create main Model
+//main model
+const Category = db.categories
+const Item = db.items
 const Seller = db.sellers
 const City = db.cities
+const ItemImage = db.item_imgs
+const sellerImage = db.user_imgs
 
 
 //Time for cookie to be saved
@@ -19,6 +23,13 @@ const maxAge = 3 * 24 * 60 * 60
 //register  new seller
 const addNewSeller = async (req,res) => {
     const {name,email,password,cities_id} = req.body
+
+    const sellerImage = req.file
+    let sellerImg
+
+    if(sellerImage){ 
+        sellerImg =sellerImage.path
+    }
 
     //all data is available
     if(!name || !email || !password || !cities_id)
@@ -47,7 +58,19 @@ const addNewSeller = async (req,res) => {
             },{fields : ['name','email','password','cities_id'] })
 
             //image uploader
+             if(sellerImage){
+                const getSellerId = await Seller.findOne({
+                    where:{
+                        email: email
+                    }
+                })
 
+                const newImage = await sellerImage.create({
+                    sellerId: getSellerId.id,
+                    imageName: sellerImg,
+                    status: 1
+                })
+            }
 
             res.redirect('/login?success='+ encodeURIComponent('yes'))
         } catch (err){
@@ -90,6 +113,136 @@ const SellerLogin = async (req,res) => {
 //Generate access token
 const accessToken = (email) => {
     return jwt.sign({email},process.env.TOKEN_SECRET,{ expiresIn : maxAge })
+}
+
+
+//get seller details from sellerEmail
+const getSellerDetailsFromSellerEmail = async (req,res) => {
+  
+    const token = req.cookies.jwt
+    let email 
+    
+    if(token){
+        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
+            if(err){
+                return res.status(400).json({ 'message' : 'jwt error'})
+            }else{
+                email = decodedToken.email
+            }
+        })
+    }else{
+        res.redirect('/login');
+    }
+
+    if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
+   
+    const foundSeller = await Seller.findOne({
+        include:[{
+            model: City,
+            as: 'city',
+            attributes:[
+                'city'
+            ]
+        },{
+            model: sellerImage,
+            as: 'userImg',
+            attributes:[
+                'img'
+            ],
+            where: { status: 1 }
+        }],
+        attributes:{
+            exclude: ['password']
+        },
+        where: {
+            email : email
+        }
+    })
+
+    if(!foundSeller) return res.sendStatus(403) //Forbidden
+
+    const city =  await City.findAll()
+    
+    res.status(200).send({
+        cities : city,
+        seller : foundSeller
+        })    
+   
+}
+
+//get seller details to the seller Profile
+const getSellerInfotoSellerProfile = async (req,res) => {
+  
+    const sellerId = req.query.seller 
+
+    if(!sellerId) return res.status(400).json({ 'message' : 'Specify a sellerId'})
+
+    const foundSeller = await Seller.findOne({
+        include:[{
+            model: City,
+            as: 'city',
+            attributes:[
+                'city'
+            ]
+        }],
+        attributes:{
+            exclude: ['id','cities_id','email','password']
+        },
+        where: {
+            sellerId : sellerId
+        }
+    })
+
+    if(!foundSeller) return res.status(400).json({ 'message' : 'No such seller'})
+    
+    const item =  await Item.findAll({
+        include:[{
+            model: Category,
+            as: 'category',
+            attributes:[
+                'category_name'
+            ]
+        },{
+            model: City,
+            as: 'city',
+            attributes:[
+                'city'
+            ]
+        },{
+            model: ItemImage,
+            as: 'itemImg',
+            attributes: [
+                'img'
+            ],
+            where:{
+                status: 1
+            }
+        }],
+        attributes:{
+            exclude: ['id','seller_id','condition_id','cities_id','contact','description','status']
+        },
+        where: {
+            status : 1,
+            sellerId : sellerId
+        }
+    })
+    
+    if(item.length>0){
+        res.status(200).send({
+            seller : foundSeller,
+            items : item
+            })   
+    }else{
+        res.status(200).send({
+            seller : foundSeller,
+            message : 'no Items'
+            })   
+    }
+
+
+
+     
+   
 }
 
 module.exports = {

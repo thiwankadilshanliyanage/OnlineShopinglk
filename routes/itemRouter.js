@@ -6,7 +6,7 @@ router.route('/')
     //List Items Page
     .get(itemController.getAllItems)
     //List filterd Items - category or city or name
-    .post(itemController.postSearchItems)
+    .post(itemController.searchedItems)
 
 router.route('/item')
     //Show item and details

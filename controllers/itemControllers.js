@@ -845,7 +845,7 @@ const getPagination = (page, size) => {
   };
 
 module.exports={
-    addItem,
+    getAllItems,
     searchedItems,
     searchAllItemsBySeller,
     searchItemDetails,
