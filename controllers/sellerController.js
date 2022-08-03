@@ -438,6 +438,10 @@ const removeSellerImage = async (req,res) => {
 
 module.exports = {
     addNewSeller,
-    SellerLogin
+    SellerLogin,
+    removeSellerImage,
+    updateSellerDetails,
+    getSellerInfotoSellerProfile,
+    getSellerDetailsFromSellerEmail,
     
 }
