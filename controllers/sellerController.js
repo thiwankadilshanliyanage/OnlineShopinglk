@@ -159,7 +159,7 @@ const getSellerDetailsFromSellerEmail = async (req,res) => {
         }
     })
 
-    if(!foundSeller) return res.sendStatus(403) //Forbidden
+    if(!foundSeller) return res.sendStatus(403) //restricted
 
     const city =  await City.findAll()
     
@@ -394,6 +394,46 @@ const updateSellerDetails = async (req,res) => {
             }
         }
     }   
+}
+
+//remove seller photo
+const removeSellerImage = async (req,res) => {
+  
+    const token = req.cookies.jwt
+    let sellerEmail 
+    
+    if(token){
+        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
+            if(err){
+                return res.status(400).json({ 'message' : 'jwt error'})
+            }else{
+                sellerEmail = decodedToken.email
+            }
+        })
+    }else{
+        res.redirect('/login');
+    }
+
+    if(!sellerEmail) return res.status(400).json({ 'message' : 'User not logged in'})
+   
+    const foundSeller = await Seller.findOne({
+        where: {
+            sellerEmail : sellerEmail
+        }
+    })
+
+    if(!foundSeller) return res.sendStatus(403) //restricted
+
+    const remImg = await sellerImage.update({
+        status : 0
+    },{
+        where:{
+            sellerId: foundSeller.sellerId,
+            status: 1
+        }
+    })
+   
+    res.redirect('/account/settings')
 }
 
 module.exports = {
