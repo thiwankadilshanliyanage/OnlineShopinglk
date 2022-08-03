@@ -253,29 +253,29 @@ const updateSellerDetails = async (req,res) => {
         sellerImg =sellerImage.path
     }
 
-    if(!name || !cities_id ||  !email || !sellerCurrentPassword  )
+    if(!name || !cities_id || !email || !sellerCurrentPassword  )
         return res.status(400).json({'message': 'All information are required'})
 
     const token = req.cookies.jwt
-    let sellerEML 
+    let semail
         
     if(token){
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decodedToken) => {
+        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
             if(err){
                 return res.status(400).json({ 'message' : 'jwt error'})
             }else{
-                sellerEML = decodedToken.email
+               semail = decodedToken.email
             }
         })
     }else{
         res.redirect('/login');
     }
     
-    if(!sellerEML) return res.status(400).json({ 'message' : 'User not logged in'})
+    if(!semail) return res.status(400).json({ 'message' : 'User not logged in'})
 
     const foundSeller = await Seller.findOne({
         where: {
-            sellerEmail : sellerEML
+            sellerEmail : semail
         }
     })
 
@@ -287,10 +287,9 @@ const updateSellerDetails = async (req,res) => {
             const match = await bcrypt.compare(sellerCurrentPassword, foundSeller.sellerPassword);
             if(match){
                 const updSeller = await Seller.update({
-                    sellerName : sellerName,
-                    sellerContact : sellerContact,
-                    sellerCity: sellerCity,
-                    sellerEmail: sellerEmail
+                    sellerName : name,
+                    sellerCity: cities_id,
+                    sellerEmail: email
                 },{
                     where: {
                         sellerId : foundSeller.sellerId
@@ -298,7 +297,7 @@ const updateSellerDetails = async (req,res) => {
                 })
                 //updating sellerImage
                 if(sellerImage){
-                    const foundImage = await SellerImage.findOne({
+                    const foundImage = await sellerImage.findOne({
                         where:{
                             sellerId : foundSeller.sellerId,
                             status: 1
@@ -306,13 +305,13 @@ const updateSellerDetails = async (req,res) => {
                     })
 
                     if(!foundImage){
-                        const newImage = await SellerImage.create({
+                        const newImage = await sellerImage.create({
                             sellerId: foundSeller.sellerId,
                             imageName: sellerImg,
                             status: 1
                         })
                     }else{
-                        const updateImage = await SellerImage.update({  
+                        const updateImage = await sellerImage.update({  
                             status: 0
                         },{where: {
                                 sellerId: foundSeller.sellerId,
@@ -320,7 +319,7 @@ const updateSellerDetails = async (req,res) => {
                             }
                         })
 
-                        const newImage = await SellerImage.create({
+                        const newImage = await sellerImage.create({
                             sellerId: foundSeller.sellerId,
                             imageName: sellerImg,
                             status: 1
@@ -328,7 +327,7 @@ const updateSellerDetails = async (req,res) => {
                     }
                 }
                 
-                const tkn = accessToken(sellerEmail)
+                const tkn = accessToken(email)
                 res.cookie('jwt', tkn, {httpOnly: true, maxAge: maxAge*1000})
                 res.status(400).json({'message': 'Details Updated'})
             }else{ 
@@ -346,10 +345,9 @@ const updateSellerDetails = async (req,res) => {
                 const hashedPwd = await bcrypt.hash(sellerConfirmPassword, 10)
 
                 const updSeller = await Seller.update({
-                    sellerName : sellerName,
-                    sellerContact : sellerContact,
-                    sellerCity: sellerCity,
-                    sellerEmail: sellerEmail,
+                    sellerName : name,
+                    sellerCity: cities_id,
+                    sellerEmail: email,
                     sellerPassword : hashedPwd
                 },{
                     where: {
@@ -366,7 +364,7 @@ const updateSellerDetails = async (req,res) => {
                     })
 
                     if(!foundImage){
-                        const newImage = await SellerImage.create({
+                        const newImage = await sellerImage.create({
                             sellerId: foundSeller.sellerId,
                             imageName: sellerImg,
                             status: 1
@@ -380,7 +378,7 @@ const updateSellerDetails = async (req,res) => {
                             }
                         })
 
-                        const newImage = await SellerImage.create({
+                        const newImage = await sellerImage.create({
                             sellerId: foundSeller.sellerId,
                             imageName: sellerImg,
                             status: 1
@@ -388,7 +386,7 @@ const updateSellerDetails = async (req,res) => {
                     }
                 }
 
-                const tkn = accessToken(sellerEmail)
+                const tkn = accessToken(email)
                 res.cookie('jwt', tkn, {httpOnly: true, maxAge: maxAge*1000})
                 res.status(400).json({'message': 'Details Updated'})
             }else{ 
