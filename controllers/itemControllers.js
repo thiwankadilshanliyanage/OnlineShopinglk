@@ -329,7 +329,7 @@ const searchAllItemsBySeller = async (req,res) => {
         res.redirect('/login');
     }
 
-    if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
+    if(!email) return res.status(400).json({ 'message' : 'User not login now'})
 
     const foundSeller = await Seller.findOne({
         where: {
@@ -337,7 +337,7 @@ const searchAllItemsBySeller = async (req,res) => {
         }
     })
 
-    if(!foundSeller) return res.sendStatus(403) //restric
+    if(!foundSeller) return res.sendStatus(403) //restrict
 
     const item =  await Item.findAll({
         include:[{
@@ -356,7 +356,7 @@ const searchAllItemsBySeller = async (req,res) => {
             model: ItemImage,
             as: 'itemImg',
             attributes:[
-                'img' // in the front end split the string and get only the first image as the main image
+                'img' 
             ],
             where: {
                 status: 1
@@ -367,7 +367,7 @@ const searchAllItemsBySeller = async (req,res) => {
         },
         where: {
             status : 1,
-            seller_id : foundSeller.seller_id
+            seller_id : foundSeller.id
         }
     })
     
@@ -426,7 +426,7 @@ const searchItemDetails = async (req,res) => {
         ],
         where: {
             itemId : itemId,
-            sellerId : foundSeller.seller_id,
+            seller_id : foundSeller.seller_id,
             status : 1
         }
     })
@@ -574,7 +574,7 @@ const unpublishItembyitemid = async (req,res) => {
     const item =  await Item.findOne({
         where: {
             itemId : itemId,
-            sellerId : foundSeller.seller_id,
+            seller_id : foundSeller.seller_id,
             status : 1
         }
     })
@@ -586,7 +586,7 @@ const unpublishItembyitemid = async (req,res) => {
     },{
         where: {
             itemId : itemId,
-            sellerId : foundSeller.seller_id
+            seller_id : foundSeller.seller_id
         }
     })
 
@@ -720,7 +720,7 @@ const editItem = async (req,res) => {
         const foundItem= await Item.findOne({
             where: {
                 itemId : itemId,
-                sellerId : foundSeller.seller_id
+                seller_id : foundSeller.seller_id
             }
         })
     
@@ -738,7 +738,7 @@ const editItem = async (req,res) => {
         },{
             where: {
                 itemId : itemId,
-                sellerId : foundSeller.seller_id
+                seller_id : foundSeller.seller_id
             }
         })
 

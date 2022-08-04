@@ -49,14 +49,14 @@ db.sequelize.sync({force:false})
 })
 
 //relationships(foreignkey)
-//Categories has many Items
+//Category has many Items
 db.categories.hasMany(db.items,{
-    foreignKey: 'category_id',
+    foreignKey: 'id',
     as: 'item'
 })
 
 db.items.belongsTo(db.categories,{
-    foreignKey: 'category_id',
+    foreignKey: 'id',
     as:'category'
 })
 
@@ -91,6 +91,38 @@ db.cities.hasMany(db.sellers,{
 db.sellers.belongsTo(db.cities,{
     foreignKey: 'cities_id',
     as:'city'
+})
+
+//seller has many items
+db.sellers.hasMany(db.items,{
+    foreignKey: 'seller_id',
+    as:'item'    
+})
+db.items.belongsTo(db.sellers,{
+    foreignKey:'seller_id',
+    as:'seller'
+})
+
+//seller has many seller imges
+db.sellers.hasMany(db.user_imgs,{
+    foreignKey:'seller_id',
+    as:'userImg'
+})
+
+db.user_imgs.belongsTo(db.sellers,{
+    foreignKey: 'seller_id',
+    as: 'seller'
+})
+
+//Item has many item images
+db.items.hasMany(db.item_imgs,{
+    foreignKey: 'item_id',
+    as: 'itemImg'
+})
+
+db.item_imgs.belongsTo(db.items,{
+    foreignKey: 'item_id',
+    as: 'item'
 })
 
 //finally export module

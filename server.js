@@ -37,7 +37,7 @@ app.use('/list',listItemRouter)//item list
 app.use('/seller',sellerRouter)//seller profile route
 app.use('/register', regrouter)//register seller
 app.use('/login',loginRouter)//login seller
-app.use('/accountRouter',JWTverify, accountRouter)//seller every detail
+app.use('/account',JWTverify, accountRouter)//seller every detail
 app.use('/logout',logoutRouter)//logout router
 app.use('/images',express.static('./images'))//img folder
 

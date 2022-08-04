@@ -59,14 +59,14 @@ const addNewSeller = async (req,res) => {
 
             //image uploader
              if(sellerImage){
-                const getSellerId = await Seller.findOne({
+                const getSeller_id = await Seller.findOne({
                     where:{
                         email: email
                     }
                 })
 
                 const newImage = await sellerImage.create({
-                    sellerId: getSellerId.id,
+                    seller_id: getSeller_id.id,
                     imageName: sellerImg,
                     status: 1
                 })
@@ -173,9 +173,9 @@ const getSellerDetailsFromSellerEmail = async (req,res) => {
 //get seller details to the seller Profile
 const getSellerInfotoSellerProfile = async (req,res) => {
   
-    const sellerId = req.query.seller 
+    const seller_id = req.query.seller 
 
-    if(!sellerId) return res.status(400).json({ 'message' : 'Specify a sellerId'})
+    if(!seller_id) return res.status(400).json({ 'message' : 'Specify a seller_id'})
 
     const foundSeller = await Seller.findOne({
         include:[{
@@ -189,7 +189,7 @@ const getSellerInfotoSellerProfile = async (req,res) => {
             exclude: ['id','cities_id','email','password']
         },
         where: {
-            sellerId : sellerId
+            seller_id : seller_id
         }
     })
 
@@ -223,7 +223,7 @@ const getSellerInfotoSellerProfile = async (req,res) => {
         },
         where: {
             status : 1,
-            sellerId : sellerId
+            seller_id : seller_id
         }
     })
     
@@ -292,21 +292,21 @@ const updateSellerDetails = async (req,res) => {
                     sellerEmail: email
                 },{
                     where: {
-                        sellerId : foundSeller.sellerId
+                        seller_id : foundSeller.seller_id
                     }
                 })
                 //updating sellerImage
                 if(sellerImage){
                     const foundImage = await sellerImage.findOne({
                         where:{
-                            sellerId : foundSeller.sellerId,
+                            seller_id : foundSeller.seller_id,
                             status: 1
                         }
                     })
 
                     if(!foundImage){
                         const newImage = await sellerImage.create({
-                            sellerId: foundSeller.sellerId,
+                            seller_id: foundSeller.seller_id,
                             imageName: sellerImg,
                             status: 1
                         })
@@ -314,13 +314,13 @@ const updateSellerDetails = async (req,res) => {
                         const updateImage = await sellerImage.update({  
                             status: 0
                         },{where: {
-                                sellerId: foundSeller.sellerId,
+                                seller_id: foundSeller.seller_id,
                                 status: 1
                             }
                         })
 
                         const newImage = await sellerImage.create({
-                            sellerId: foundSeller.sellerId,
+                            seller_id: foundSeller.seller_id,
                             imageName: sellerImg,
                             status: 1
                         })       
@@ -351,21 +351,21 @@ const updateSellerDetails = async (req,res) => {
                     sellerPassword : hashedPwd
                 },{
                     where: {
-                        sellerId : foundSeller.sellerId
+                        seller_id : foundSeller.seller_id
                     }
                 })
                 //updating Seller Image
                 if(sellerImage){
                     const foundImage = await SellerImage.findOne({
                         where:{
-                            sellerId : foundSeller.sellerId,
+                            seller_id : foundSeller.seller_id,
                             status: 1
                         }
                     })
 
                     if(!foundImage){
                         const newImage = await sellerImage.create({
-                            sellerId: foundSeller.sellerId,
+                            seller_id: foundSeller.seller_id,
                             imageName: sellerImg,
                             status: 1
                         })
@@ -373,13 +373,13 @@ const updateSellerDetails = async (req,res) => {
                         const updateImage = await SellerImage.update({  
                             status: 0
                         },{where: {
-                                sellerId: foundSeller.sellerId,
+                                seller_id: foundSeller.seller_id,
                                 status: 1
                             }
                         })
 
                         const newImage = await sellerImage.create({
-                            sellerId: foundSeller.sellerId,
+                            seller_id: foundSeller.seller_id,
                             imageName: sellerImg,
                             status: 1
                         })       
@@ -428,7 +428,7 @@ const removeSellerImage = async (req,res) => {
         status : 0
     },{
         where:{
-            sellerId: foundSeller.sellerId,
+            seller_id: foundSeller.seller_id,
             status: 1
         }
     })
