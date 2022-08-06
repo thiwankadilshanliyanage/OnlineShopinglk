@@ -2,8 +2,8 @@ module.exports = (sequelize, DataTypes) =>{
     const ItemImage = sequelize.define("itemImg",{
         id: {
             type: DataTypes.INTEGER,
-            primaryKey:true,
-            allowNull: false
+            autoIncrement:true,
+            primaryKey:true
         },
         item_id: {
             type: DataTypes.INTEGER,

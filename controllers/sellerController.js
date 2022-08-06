@@ -15,7 +15,7 @@ const ItemImage = db.item_imgs
 const sellerImage = db.user_imgs
 
 
-//Time for cookie to be saved
+//cookie life time
 const maxAge = 3 * 24 * 60 * 60
 
 //main work
@@ -93,7 +93,7 @@ const SellerLogin = async (req,res) => {
     })
 
     if(!foundSeller) 
-       // return res.redirect('/login?avail='+ encodeURIComponent('no'))
+       
        return res.status(400).json({'message': 'Not a registered user'})
     else{
         //evaluate password
@@ -104,7 +104,6 @@ const SellerLogin = async (req,res) => {
             res.cookie('jwt', token, {httpOnly: true, maxAge: maxAge*1000})
             res.redirect('/account')
         }else{ 
-            //res.redirect('/login?sucess='+ encodeURIComponent('no'))
             res.status(400).json({'message': 'Email and Password do not match'})
         }
     }   
@@ -143,14 +142,16 @@ const getSellerDetailsFromSellerEmail = async (req,res) => {
             attributes:[
                 'city'
             ]
-        },{
+        },
+        {
             model: sellerImage,
             as: 'userImg',
             attributes:[
                 'img'
             ],
             where: { status: 1 }
-        }],
+        }
+    ],
         attributes:{
             exclude: ['password']
         },
@@ -158,7 +159,7 @@ const getSellerDetailsFromSellerEmail = async (req,res) => {
             email : email
         }
     })
-
+        console.log(foundSeller)
     if(!foundSeller) return res.sendStatus(403) //restricted
 
     const city =  await City.findAll()
@@ -284,7 +285,7 @@ const updateSellerDetails = async (req,res) => {
             return res.status(400).json({'message': 'No such seller'})
         else{
             //evaluate password
-            const match = await bcrypt.compare(sellerCurrentPassword, foundSeller.sellerPassword);
+            const match = await bcrypt.compare(sellerCurrentPassword, foundSeller.password);
             if(match){
                 const updSeller = await Seller.update({
                     sellerName : name,
@@ -292,21 +293,21 @@ const updateSellerDetails = async (req,res) => {
                     sellerEmail: email
                 },{
                     where: {
-                        seller_id : foundSeller.seller_id
+                        seller_id : foundSeller.id
                     }
                 })
                 //updating sellerImage
                 if(sellerImage){
                     const foundImage = await sellerImage.findOne({
                         where:{
-                            seller_id : foundSeller.seller_id,
+                            seller_id : foundSeller.id,
                             status: 1
                         }
                     })
 
                     if(!foundImage){
                         const newImage = await sellerImage.create({
-                            seller_id: foundSeller.seller_id,
+                            seller_id: foundSeller.id,
                             imageName: sellerImg,
                             status: 1
                         })
@@ -314,13 +315,13 @@ const updateSellerDetails = async (req,res) => {
                         const updateImage = await sellerImage.update({  
                             status: 0
                         },{where: {
-                                seller_id: foundSeller.seller_id,
+                                seller_id: foundSeller.id,
                                 status: 1
                             }
                         })
 
                         const newImage = await sellerImage.create({
-                            seller_id: foundSeller.seller_id,
+                            seller_id: foundSeller.id,
                             imageName: sellerImg,
                             status: 1
                         })       
@@ -339,7 +340,7 @@ const updateSellerDetails = async (req,res) => {
             return res.status(400).json({'message': 'No such seller'})
         else{
             //evaluate password
-            const match = await bcrypt.compare(sellerCurrentPassword, foundSeller.sellerPassword);
+            const match = await bcrypt.compare(sellerCurrentPassword, foundSeller.password);
             if(match){
 
                 const hashedPwd = await bcrypt.hash(sellerConfirmPassword, 10)
@@ -351,35 +352,35 @@ const updateSellerDetails = async (req,res) => {
                     sellerPassword : hashedPwd
                 },{
                     where: {
-                        seller_id : foundSeller.seller_id
+                        seller_id : foundSeller.id
                     }
                 })
                 //updating Seller Image
                 if(sellerImage){
                     const foundImage = await SellerImage.findOne({
                         where:{
-                            seller_id : foundSeller.seller_id,
+                            seller_id : foundSeller.id,
                             status: 1
                         }
                     })
 
                     if(!foundImage){
                         const newImage = await sellerImage.create({
-                            seller_id: foundSeller.seller_id,
+                            seller_id: foundSeller.id,
                             imageName: sellerImg,
                             status: 1
                         })
                     }else{
-                        const updateImage = await SellerImage.update({  
+                        const updateImage = await sellerImage.update({  
                             status: 0
                         },{where: {
-                                seller_id: foundSeller.seller_id,
+                                seller_id: foundSeller.id,
                                 status: 1
                             }
                         })
 
                         const newImage = await sellerImage.create({
-                            seller_id: foundSeller.seller_id,
+                            seller_id: foundSeller.id,
                             imageName: sellerImg,
                             status: 1
                         })       
@@ -428,12 +429,12 @@ const removeSellerImage = async (req,res) => {
         status : 0
     },{
         where:{
-            seller_id: foundSeller.seller_id,
+            seller_id: foundSeller.id,
             status: 1
         }
     })
    
-    res.redirect('/account/settings')
+    res.redirect('/account/Usersettings')
 }
 
 module.exports = {

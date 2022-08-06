@@ -7,7 +7,7 @@ const router = require('express').Router()
 
 
 router.route('/')
-    .get(itemController.searchAllItemsBySeller)    //get all Listings by the seller
+    .get(itemController.searchAllItemsBySeller)    //get all items by the seller
 router.route('/add')
     .get(itemController.getAddItemNecessityInfo) //add listing -- get categories, itemconditions, cities ,sellerContact, sellerCity
     .post(itemImageMiddleware.upload,itemController.addItem) //save listing
@@ -22,11 +22,11 @@ router.route('/edit/delimgs')
 router.route('/delete')
     .get(itemController.unpublishItembyitemid) //delete or unpublish listing  
 
-router.route('/settings')
+router.route('/Usersettings')
     .get(sellerController.getSellerDetailsFromSellerEmail)//get seller details
     .post(sellerImageMiddleware.upload,sellerController.updateSellerDetails)//update change settings
 
-router.route('/settings/imgdel')
+router.route('/Usersettings/imgdel')
     .get(sellerController.removeSellerImage)
 
 

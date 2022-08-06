@@ -76,7 +76,7 @@ const getAllItems = async (req,res) => {
                 }
             }],
             where: {
-                catId : category,
+                id : category,
                 status : 1
             },
             limit, offset
@@ -108,7 +108,7 @@ const getAllItems = async (req,res) => {
                 }
             }],
             where: {
-                itemName : {[Sequelize.Op.like]: `%${name}%`},
+                name : {[Sequelize.Op.like]: `%${name}%`},
                 status : 1
             },
             limit, offset
@@ -426,7 +426,7 @@ const searchItemDetails = async (req,res) => {
         ],
         where: {
             itemId : itemId,
-            seller_id : foundSeller.seller_id,
+            seller_id : foundSeller.id,
             status : 1
         }
     })
@@ -574,7 +574,7 @@ const unpublishItembyitemid = async (req,res) => {
     const item =  await Item.findOne({
         where: {
             itemId : itemId,
-            seller_id : foundSeller.seller_id,
+            seller_id : foundSeller.id,
             status : 1
         }
     })
@@ -586,7 +586,7 @@ const unpublishItembyitemid = async (req,res) => {
     },{
         where: {
             itemId : itemId,
-            seller_id : foundSeller.seller_id
+            seller_id : foundSeller.id
         }
     })
 
@@ -630,10 +630,12 @@ const addItem = async (req,res) => {
         if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
        
         const foundSeller = await Seller.findOne({
+            
             where: {
                 email : email
             }
         })
+        console.log(email,foundSeller.id)
     
         if(!foundSeller) return res.sendStatus(403) //restric
 
@@ -642,7 +644,7 @@ const addItem = async (req,res) => {
  
         const newItem = await Item.create({
             category_id: category_id,
-            seller_id: foundSeller.seller_id,
+            seller_id: foundSeller.id,
             name: name,
             condition_id: condition_id,
             price: price,
@@ -657,16 +659,17 @@ const addItem = async (req,res) => {
         
             const getItemId = await Item.findOne({
                 where:{
-                    seller_id: foundSeller.seller_id
+                    seller_id: foundSeller.id
                 },
                 order:[ [ 'id', 'DESC' ] ]
             })
-
+                console.log(getItemId.id)
             const newImage = await ItemImage.create({
-                item_id: getItemId.item_id,
+                item_id: getItemId.id,
                 img: itemImgs.toString(),
                 status: 1
-            }) 
+            },{fields : ['item_id','img','status'] })
+     
         
 
 
@@ -720,7 +723,7 @@ const editItem = async (req,res) => {
         const foundItem= await Item.findOne({
             where: {
                 itemId : itemId,
-                seller_id : foundSeller.seller_id
+                seller_id : foundSeller.id
             }
         })
     
@@ -738,7 +741,7 @@ const editItem = async (req,res) => {
         },{
             where: {
                 itemId : itemId,
-                seller_id : foundSeller.seller_id
+                seller_id : foundSeller.id
             }
         })
 
@@ -747,13 +750,13 @@ const editItem = async (req,res) => {
                 status: 0
             },{
                 where: {
-                    itemId : foundItem.itemId,
+                    itemId : foundItem.id,
                     status : 1
                 }
             })
 
             const newImgs = await ItemImage.create({
-                itemId: foundItem.itemId,
+                itemId: foundItem.id,
                 imageName: itemImgs.toString(),
                 status: 1
             })
@@ -796,18 +799,18 @@ const deleteImgs = async (req,res) => {
         status : 0
     },{
         where:{
-            itemId: foundItem.itemId,
+            itemId: foundItem.id,
             status: 1
         }
     })
 
     const updImg = await ItemImage.create({
-                itemId: foundItem.itemId,
+                itemId: foundItem.id,
                 imageName: '',
                 status: 1
     })
    
-    res.redirect('/account/edit?itemId='+foundItem.itemId)
+    res.redirect('/account/edit?itemId='+foundItem.id)
 }
 
 //Date and Time format
