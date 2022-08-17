@@ -54,8 +54,8 @@ const getAllItems = async (req,res) => {
         const pagitem = getPagingData(item, page, limit)//pagination page data
 
         res.status(200).send({
-            categories : cat,
-            cities: cty,
+            // categories : cat,
+            // cities: cty,
             data : pagitem
         })
     }else if(category && !name && !city){
@@ -76,7 +76,7 @@ const getAllItems = async (req,res) => {
                 }
             }],
             where: {
-                id : category,
+                category_id : category,
                 status : 1
             },
             limit, offset
@@ -85,8 +85,8 @@ const getAllItems = async (req,res) => {
         const pagitem = getPagingData(item, page, limit)
 
         res.status(200).send({
-            categories : cat,
-            cities: cty,
+            // categories : cat,
+            // cities: cty,
             data : pagitem
         })
     }else if(!category && name && !city){
@@ -117,8 +117,8 @@ const getAllItems = async (req,res) => {
         const pagitem = getPagingData(item, page, limit)
 
         res.status(200).send({
-            categories : cat,
-            cities: cty,
+            // categories : cat,
+            // cities: cty,
             data : pagitem
         })
     }else if(!category && !name && city){
@@ -140,7 +140,7 @@ const getAllItems = async (req,res) => {
                 }
             }],
             where: {
-                itemCity : city, 
+                cities_id : city, 
                 status : 1
             },
             limit, offset
@@ -149,8 +149,8 @@ const getAllItems = async (req,res) => {
         const pagitem = getPagingData(item, page, limit)
 
         res.status(200).send({
-            categories : cat,
-            cities: cty,
+            // categories : cat,
+            // cities: cty,
             data : pagitem
         })
     }else if(category && name && !city){
@@ -172,7 +172,7 @@ const getAllItems = async (req,res) => {
                 }
             }],
             where: {
-                catId : category,
+                category_id : category,
                 itemName : {[Sequelize.Op.like]: `%${name}%`},
                 status : 1
             },
@@ -401,7 +401,7 @@ const searchItemDetails = async (req,res) => {
         res.redirect('/login');
     }
 
-    if(!sellerEmail) return res.status(400).json({ 'message' : 'User not logged in'})
+    if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
    
     const foundSeller = await Seller.findOne({
         where: {
@@ -410,14 +410,14 @@ const searchItemDetails = async (req,res) => {
     })
 
     if(!foundSeller) return res.sendStatus(403) //restric
-
+    console.log(itemId)
     const item =  await Item.findOne({
         include:[
             {
                 model: ItemImage,
                 as: 'itemImg',
                 attributes:[
-                    'img' // in the front end split the string to an array and seperately get the images
+                    'img' 
                 ],
                 where:{
                     status: 1
@@ -425,7 +425,7 @@ const searchItemDetails = async (req,res) => {
             } 
         ],
         where: {
-            itemId : itemId,
+            id : itemId,
             seller_id : foundSeller.id,
             status : 1
         }
@@ -439,7 +439,7 @@ const searchItemDetails = async (req,res) => {
     
     const foundCity = await City.findOne({
         where: {
-            cityId: item.cities_id
+            id : item.cities_id 
         }
     })
 
@@ -473,14 +473,14 @@ const getItemInformation = async (req,res) => {
             model: ItemImage,
             as: 'itemImg',
             attributes:[
-                'img' //can split and get the images seperately to put into the slider
+                'img' 
             ],
             where:{
                 status:1
             }
         }],
         where: {
-            itemId : itemId,
+            id : itemId,
             status : 1
         }
     })
@@ -522,7 +522,7 @@ const getAddItemNecessityInfo = async (req,res) => {
 
     const foundCity = await City.findOne({
         where: {
-            cityId: foundSeller.cities_id
+            id: foundSeller.cities_id
         }
     })
 
@@ -558,7 +558,8 @@ const unpublishItembyitemid = async (req,res) => {
             }
         })
     }else{
-        res.redirect('/login');
+        // res.redirect('/login');
+        res.status(400).json({ 'message' : 'User not logged in'})
     }
 
     if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
@@ -573,7 +574,7 @@ const unpublishItembyitemid = async (req,res) => {
 
     const item =  await Item.findOne({
         where: {
-            itemId : itemId,
+            id : itemId,
             seller_id : foundSeller.id,
             status : 1
         }
@@ -585,12 +586,13 @@ const unpublishItembyitemid = async (req,res) => {
         status :0
     },{
         where: {
-            itemId : itemId,
+            id : itemId,
             seller_id : foundSeller.id
         }
     })
 
-    res.redirect('/account')     
+    // res.redirect('/account')   
+    res.status(400).json({ 'message' : 'Delete Successful'})  
    
 }
 
@@ -618,7 +620,7 @@ const addItem = async (req,res) => {
         if(token){
             jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
                 if(err){
-                    return res.status(400).json({ 'message' : 'jwt error'})
+                    return res.status(400).json({ 'message' : 'jwt error occured'})
                 }else{
                     email = decodedToken.email
                 }
@@ -635,7 +637,7 @@ const addItem = async (req,res) => {
                 email : email
             }
         })
-        console.log(email,foundSeller.id)
+        //console.log(email,foundSeller.id)
     
         if(!foundSeller) return res.sendStatus(403) //restric
 
@@ -663,7 +665,7 @@ const addItem = async (req,res) => {
                 },
                 order:[ [ 'id', 'DESC' ] ]
             })
-                console.log(getItemId.id)
+                //console.log(getItemId.id)
             const newImage = await ItemImage.create({
                 item_id: getItemId.id,
                 img: itemImgs.toString(),
@@ -672,8 +674,8 @@ const addItem = async (req,res) => {
      
         
 
-
-        res.redirect('/account')
+        res.status(200).json({ 'message' : 'Item Add successful'})
+        // res.redirect('/account')
 }
 
 //Edit Item 
@@ -718,16 +720,16 @@ const editItem = async (req,res) => {
             }
         })
     
-        if(!foundSeller) return res.sendStatus(403) //restric
+        if(!foundSeller) return res.sendStatus(403) //restric(forbitten)
 
         const foundItem= await Item.findOne({
             where: {
-                itemId : itemId,
+                id : itemId,
                 seller_id : foundSeller.id
             }
         })
     
-        if(!foundItem) return res.sendStatus(403) //restric
+        if(!foundItem) return res.sendStatus(403) //restric(forbitten)
 
         const updateItem = await Item.update({
             category_id: category_id,
@@ -740,7 +742,7 @@ const editItem = async (req,res) => {
             status: 1
         },{
             where: {
-                itemId : itemId,
+                id : itemId,
                 seller_id : foundSeller.id
             }
         })
@@ -750,14 +752,14 @@ const editItem = async (req,res) => {
                 status: 0
             },{
                 where: {
-                    itemId : foundItem.id,
+                    item_id : foundItem.id,
                     status : 1
                 }
             })
 
             const newImgs = await ItemImage.create({
-                itemId: foundItem.id,
-                imageName: itemImgs.toString(),
+                item_id: foundItem.id,
+                img: itemImgs.toString(),
                 status: 1
             })
         }

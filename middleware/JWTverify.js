@@ -14,7 +14,11 @@ const Seller = db.sellers
  //check JWT exists & is verified
 const JWTverify = (req, res, next) => {
     const token = req.cookies.jwt  
+    const authHeader = req.headers['authorization']
+    const acctoken = authHeader && authHeader.split(' ')[1]  
    
+    if(token != acctoken) return res.status(403).send({ message : 'Invalid Access Token'})
+
     if(token){
         jwt.verify(token, process.env.TOKEN_SECRET, (err, decodedToken) => {
             if(err){

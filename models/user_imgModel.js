@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) =>{
         id: {
             type: DataTypes.INTEGER,
             primaryKey:true,
-            allowNull: false
+            // allowNull: false
         },
         seller_id: {
             type: DataTypes.INTEGER,
@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) =>{
         },
         img: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
         status: {
             type: DataTypes.INTEGER,
