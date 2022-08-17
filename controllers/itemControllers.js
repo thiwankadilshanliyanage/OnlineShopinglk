@@ -12,19 +12,18 @@ const City = db.cities
 const ItemCondition = db.conditions
 const ItemImage = db.item_imgs
 
-
-//get all items
-
 //get all Item Page
 const getAllItems = async (req,res) => {
-
+//url
     let name = req.query.name
     let category = req.query.category
     let city =req.query.city
 
+    //category and city
     const cat =  await Category.findAll()
     const cty = await City.findAll()
 
+    //pagination
     const { page, size } = req.query;
     const { limit, offset } = getPagination(page, size);//pagination
 
@@ -109,6 +108,7 @@ const getAllItems = async (req,res) => {
             }],
             where: {
                 name : {[Sequelize.Op.like]: `%${name}%`},
+                description : {[Sequelize.Op.like]: `%${name}%`},
                 status : 1
             },
             limit, offset
@@ -173,8 +173,11 @@ const getAllItems = async (req,res) => {
             }],
             where: {
                 category_id : category,
-                itemName : {[Sequelize.Op.like]: `%${name}%`},
-                status : 1
+                status : 1,
+                [Sequelize.op.or]:{
+                    name : {[Sequelize.Op.like]: `%${name}%`},
+                description : {[Sequelize.Op.like]: `%${name}%`},
+                }
             },
             limit, offset
         })
@@ -205,9 +208,12 @@ const getAllItems = async (req,res) => {
                 }
             }],
             where: {
-                itemCity : city,
-                itemName : {[Sequelize.Op.like]: `%${name}%`},
-                status : 1
+                cities_id : city,
+                status : 1,
+                [Sequelize.Op.or]:{
+                    name : {[Sequelize.Op.like]: `%${name}%`},
+                description : {[Sequelize.Op.like]: `%${name}%`}
+                }
             },
             limit, offset
         })
@@ -271,10 +277,13 @@ const getAllItems = async (req,res) => {
                 }
             }],
             where: {
-                catId: category,
-                itemName : {[Sequelize.Op.like]: `%${name}%`},
-                itemCity : city,
-                status : 1
+                category_id: category,
+                cities_id : city,
+                status : 1,
+                [Sequelize.Op.or]:{
+                name : {[Sequelize.Op.like]: `%${name}%`},
+                description : {[Sequelize.Op.like]: `%${name}%`}
+                }
             },
             limit, offset
         })
@@ -315,29 +324,22 @@ const searchedItems = (req,res) =>{
 //search items by seller
 const searchAllItemsBySeller = async (req,res) => {
 
-    const token = req.cookies.jwt
+    // const token = req.cookies.jwt
     let email 
-    if(token){
-        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
-            if(err){
-                return res.status(400).json({ 'message' : 'jwt error occured'});
-            }else{
-                email = decodedToken.email
-            }
-        })
-    }else{
-        res.redirect('/login');
+    try {
+        email = req.email.email;
+    } catch (e) {
+        console.log(e);
+        return res.status(400).send({message:'Error'})
     }
-
-    if(!email) return res.status(400).json({ 'message' : 'User not login now'})
-
+    
+    if(!email) return res.status(400).send({message:'not authorizesd'})
     const foundSeller = await Seller.findOne({
         where: {
             email : email
         }
     })
-
-    if(!foundSeller) return res.sendStatus(403) //restrict
+    if(!foundSeller) return res.status(400).send({message:'Can not found seller'})
 
     const item =  await Item.findAll({
         include:[{
@@ -386,22 +388,16 @@ const searchAllItemsBySeller = async (req,res) => {
 const searchItemDetails = async (req,res) => {
     const itemId = req.query.id
     
-    const token = req.cookies.jwt
     let email 
-    
-    if(token){
-        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
-            if(err){
-                return res.status(400).json({ 'message' : 'jwt error occured'})
-            }else{
-                email = decodedToken.email
-            }
-        })
-    }else{
-        res.redirect('/login');
+    try {
+        email = req.email.email;
+    } catch (error) {
+        console.log(error);
+        return res.status(400).send({message:"Error"})
     }
 
-    if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
+
+    if(!email) return res.status(401).json({ 'message' : 'User not logged in'})
    
     const foundSeller = await Seller.findOne({
         where: {
@@ -409,7 +405,7 @@ const searchItemDetails = async (req,res) => {
         }
     })
 
-    if(!foundSeller) return res.sendStatus(403) //restric
+    if(!foundSeller) return res.sendStatus(403).send({message:'can not found seller'}) //restric
     console.log(itemId)
     const item =  await Item.findOne({
         include:[
@@ -431,11 +427,13 @@ const searchItemDetails = async (req,res) => {
         }
     })
 
+    if(!item) return res.status(403).send({ message : 'Item is not seller' })
+
     const category =  await Category.findAll()
     const icondition =  await ItemCondition.findAll()
     const city = await City.findAll()
 
-    if(!item) return res.sendStatus(403)
+    // if(!item) return res.sendStatus(403)
     
     const foundCity = await City.findOne({
         where: {
@@ -495,20 +493,15 @@ const getItemInformation = async (req,res) => {
 
 //get add item page necessary data
 const getAddItemNecessityInfo = async (req,res) => {
-    const token = req.cookies.jwt
-    let email 
     
-    if(token){
-        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
-            if(err){
-                return res.status(400).json({ 'message' : 'jwt error occured'})
-            }else{
-                email = decodedToken.email
-            }
-        })
-    }else{
-        res.redirect('/login');
+    let email 
+    try {
+        email = req.email.email;
+    } catch (error) {
+        console.log(error)
+        return res.status(400).send({ message : 'Error'})
     }
+    
 
     if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
    
@@ -518,7 +511,7 @@ const getAddItemNecessityInfo = async (req,res) => {
         }
     })
 
-    if(!foundSeller) return res.sendStatus(403) //restric
+    if(!foundSeller) return res.Status(403).send({message:'Seller can not found'}) //restric
 
     const foundCity = await City.findOne({
         where: {
@@ -535,7 +528,7 @@ const getAddItemNecessityInfo = async (req,res) => {
         itemConditions : icondition,
         cities : city,
         details : {
-         //   contact: foundSeller.sellerContact,
+         
             city : foundCity.city
         }
         })    
@@ -546,21 +539,15 @@ const getAddItemNecessityInfo = async (req,res) => {
 const unpublishItembyitemid = async (req,res) => {
     const itemId = req.query.id
     
-    const token = req.cookies.jwt
+   
     let email 
     
-    if(token){
-        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
-            if(err){
-                return res.status(400).json({ 'message' : 'jwt error occured'})
-            }else{
-                email = decodedToken.email
-            }
-        })
-    }else{
-        // res.redirect('/login');
-        res.status(400).json({ 'message' : 'User not logged in'})
-    }
+  try {
+    email = req.email.email;
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send({ message : 'Error'})
+  }
 
     if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
    
@@ -570,7 +557,7 @@ const unpublishItembyitemid = async (req,res) => {
         }
     })
 
-    if(!foundSeller) return res.sendStatus(403) //restric
+    if(!foundSeller) return res.status(403).send({message: 'can not found seller'}) //restric
 
     const item =  await Item.findOne({
         where: {
@@ -580,7 +567,7 @@ const unpublishItembyitemid = async (req,res) => {
         }
     })
     
-    if(!item) return res.sendStatus(403)
+    if(!item) return res.status(403).send({message:'item is not seller'})
     
     const remItem = await Item.update({
         status :0
@@ -592,7 +579,14 @@ const unpublishItembyitemid = async (req,res) => {
     })
 
     // res.redirect('/account')   
-    res.status(400).json({ 'message' : 'Delete Successful'})  
+    const remImg= await ItemImage.update({
+        status :0
+    },{
+        where: {
+            id : itemId,
+        }
+    })
+    return res.status(200).json({ 'message' : 'Delete Successful'})  
    
 }
 
@@ -601,8 +595,17 @@ const unpublishItembyitemid = async (req,res) => {
 const addItem = async (req,res) => {
 
     const {name,category_id,condition_id,price,description,cities_id,contact} = req.body
-    const itemImages = req.files
+   
+    const validateContact = /^0[0-9]{9}?$/
 
+    if(!validateContact.test(contact))
+    return res.status(400).send({message: 'Contact is not valied'})
+
+    if(price<0)
+    return res.status(400).send({message: 'price is not valied'})
+
+    
+    const itemImages = req.files
     let itemImgs = []
 
     if(itemImages){
@@ -614,22 +617,18 @@ const addItem = async (req,res) => {
     if(!name || !category_id || !condition_id || !price || !description || !cities_id || !contact)
         return res.status(400).json({'message': 'All information are required'})
 
-        const token = req.cookies.jwt
+        
         let email 
         
-        if(token){
-            jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
-                if(err){
-                    return res.status(400).json({ 'message' : 'jwt error occured'})
-                }else{
-                    email = decodedToken.email
-                }
-            })
-        }else{
-            res.redirect('/login');
+        try {
+            email = req.email.email;
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ message : 'Error'})
         }
+        
     
-        if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
+        if(!email) return res.status(401).json({ 'message' : 'User not logged in'})
        
         const foundSeller = await Seller.findOne({
             
@@ -639,7 +638,7 @@ const addItem = async (req,res) => {
         })
         //console.log(email,foundSeller.id)
     
-        if(!foundSeller) return res.sendStatus(403) //restric
+        if(!foundSeller) return res.status(400).send({message:'can not found seller'}) //restric
 
         const dt = formatDate(new Date()).toString()// date
         
@@ -670,7 +669,7 @@ const addItem = async (req,res) => {
                 item_id: getItemId.id,
                 img: itemImgs.toString(),
                 status: 1
-            },{fields : ['item_id','img','status'] })
+            })
      
         
 
@@ -682,6 +681,14 @@ const addItem = async (req,res) => {
 const editItem = async (req,res) => {
 
     const {name,category_id,condition_id,price,description,cities_id,contact} = req.body
+    
+    const validateContact = /^0[0-9]{9}?$/
+
+    if(!validateContact.test(contact))
+    return res.status(400).send({message: 'Contact is not valied'})
+
+    if(price<0)
+    return res.status(400).send({message: 'price is not valied'})
     
     const itemImages = req.files
 
@@ -697,22 +704,17 @@ const editItem = async (req,res) => {
         return res.status(400).json({'message': 'All information are required'})
 
         const itemId = req.query.id
-        const token = req.cookies.jwt
+        
         let email 
         
-        if(token){
-            jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
-                if(err){
-                    return res.status(400).json({ 'message' : 'jwt error'})
-                }else{
-                    email = decodedToken.email
-                }
-            })
-        }else{
-            res.redirect('/login');
+        try {
+            email = req.email.email;
+        } catch (error) {
+            console.log(error);
+            return res.status(400).send({ message : 'Error'})
         }
     
-        if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
+        if(!email) return res.status(401).json({ 'message' : 'User not logged in'})
        
         const foundSeller = await Seller.findOne({
             where: {
@@ -720,16 +722,20 @@ const editItem = async (req,res) => {
             }
         })
     
-        if(!foundSeller) return res.sendStatus(403) //restric(forbitten)
+        if(!foundSeller) return res.status(400).send({message:'Can not find seller'}) //restric(forbitten)
 
-        const foundItem= await Item.findOne({
+       
+
+
+        const foundItem = await Item.findOne({
             where: {
                 id : itemId,
                 seller_id : foundSeller.id
             }
         })
     
-        if(!foundItem) return res.sendStatus(403) //restric(forbitten)
+        if(!foundItem) return res.status(403).send({ message : 'Item is not seller' })
+            
 
         const updateItem = await Item.update({
             category_id: category_id,
@@ -748,6 +754,16 @@ const editItem = async (req,res) => {
         })
 
         if(itemImages){
+
+            const findImg = await ItemImage.findOne({
+                where:{
+                    item_id : foundItem.id,
+                    img : '',
+                    status: 1
+                }
+            })
+
+            if(!findImg){
             const currentImgs = await ItemImage.update({
                 status: 0
             },{
@@ -762,53 +778,69 @@ const editItem = async (req,res) => {
                 img: itemImgs.toString(),
                 status: 1
             })
-        }
-    
-        res.redirect('/account')
+        }else{
+            const newImgs = await ItemImage.update({
+                item_id: foundItem.id,
+                img: itemImgs.toString(),
+                status: 1
+            },{where:{
+                    item_id : foundItem.id,
+                    img : '',
+                    status: 1
+                }
+            })
+        }    
+    }
+        res.status(200).json({ 'message' : 'Item Edit successful'})
+        // res.redirect('/account')
 }
 
 //remove item images
 const deleteImgs = async (req,res) => {
   
     const itemId = req.query.id
-    const token = req.cookies.jwt
-    let email 
     
-    if(token){
-        jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
-            if(err){
-                return res.status(400).json({ 'message' : 'jwt error'})
-            }else{
-                email = decodedToken.email
-            }
-        })
-    }else{
-        res.redirect('/login');
+    let email 
+    try {
+        email = req.email.email;
+    } catch (error) {
+        console.log(error);
+        return res.status(400).send({ message : 'Error'})
     }
-
-    if(!email) return res.status(400).json({ 'message' : 'User not logged in'})
    
+
+    if(!email) return res.status(401).json({ 'message' : 'User not logged in'})
+   
+    const foundSeller = await Item.findOne({
+        where: {
+           email:email
+        }
+    })
+
+    if(!foundSeller) return res.status(400).send({ message : 'Can not find seller' })
+
     const foundItem = await Item.findOne({
         where: {
-            itemId : itemId,
+            id : itemId,
+            seller_id : foundSeller.id,
             status: 1
         }
     })
 
-    if(!foundItem) return res.sendStatus(403) //restric
+    if(!foundItem) return res.status(403).send({ message : 'Item is not seller' })
 
     const remImg = await ItemImage.update({
         status : 0
     },{
         where:{
-            itemId: foundItem.id,
+            item_id: foundItem.id,
             status: 1
         }
     })
 
     const updImg = await ItemImage.create({
-                itemId: foundItem.id,
-                imageName: '',
+                item_id: foundItem.id,
+                img: '',
                 status: 1
     })
    

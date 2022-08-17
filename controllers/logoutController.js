@@ -8,7 +8,8 @@ const Seller = db.sellers
 //logout
 const logout = async(req,res)=>{
     res.cookie('jwt','',{ maxAge: 1 })
-    res.redirect('/')
+    // res.redirect('/')
+    res.status(200).json({ 'message' : 'Logout successfull'})
 }
 
 module.exports={
