@@ -19,18 +19,20 @@ const JWTverify = (req, res, next) => {
    
     if(token != acctoken) return res.status(403).send({ message : 'Invalid Access Token'})
 
-    if(token){
+    if(token !=null){
         jwt.verify(token, process.env.TOKEN_SECRET, (err, decodedToken) => {
             if(err){
                 console.log(err.message)
-                res.redirect('/login')
+                return res.status(403).send({ message : 'Invalid Access Token'})
             }else{
-                console.log(decodedToken)
+                // console.log(decodedToken)
+                req.email= decodedToken
                 next()
             }
         })
     }else{
-        res.redirect('/login')
+        return res.status(401).send({ message : 'No Access Token'})
+    
     }
     
 }
